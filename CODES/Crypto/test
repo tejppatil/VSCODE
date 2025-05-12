@@ -1,0 +1,151 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+void createMatrix(char key[], char matrix[5][5]) {
+    int used[26] = {0};
+    int row = 0, col = 0;
+    
+    // First, fill with key
+    for(int i = 0; key[i] != '\0'; i++) {
+        if(key[i] == 'J') key[i] = 'I';
+        if(!used[key[i] - 'A']) {
+            matrix[row][col] = key[i];
+            used[key[i] - 'A'] = 1;
+            col++;
+            if(col == 5) {
+                col = 0;
+                row++;
+            }
+        }
+    }
+    
+    // Then fill remaining letters
+    used['J' - 'A'] = 1;  // Skip J as it's replaced by I
+    for(char c = 'A'; c <= 'Z'; c++) {
+        if(!used[c - 'A']) {
+            matrix[row][col] = c;
+            col++;
+            if(col == 5) {
+                col = 0;
+                row++;
+            }
+        }
+    }
+}
+
+void findPosition(char matrix[5][5], char c, int *row, int *col) {
+    if(c == 'J') c = 'I';
+    for(int i = 0; i < 5; i++)
+        for(int j = 0; j < 5; j++)
+            if(matrix[i][j] == c) {
+                *row = i;
+                *col = j;
+                return;
+            }
+}
+
+void encrypt(char matrix[5][5], char *input) {
+    int len = strlen(input);
+    char output[100];
+    int k = 0;
+    
+    // Process pairs
+    for(int i = 0; i < len; i += 2) {
+        int row1, col1, row2, col2;
+        
+        // If at last character, add X
+        if(i + 1 == len) {
+            findPosition(matrix, input[i], &row1, &col1);
+            findPosition(matrix, 'X', &row2, &col2);
+        } else {
+            findPosition(matrix, input[i], &row1, &col1);
+            findPosition(matrix, input[i+1], &row2, &col2);
+        }
+        
+        // Same row
+        if(row1 == row2) {
+            output[k++] = matrix[row1][(col1 + 1) % 5];
+            output[k++] = matrix[row2][(col2 + 1) % 5];
+        }
+        // Same column
+        else if(col1 == col2) {
+            output[k++] = matrix[(row1 + 1) % 5][col1];
+            output[k++] = matrix[(row2 + 1) % 5][col2];
+        }
+        // Rectangle case
+        else {
+            output[k++] = matrix[row1][col2];
+            output[k++] = matrix[row2][col1];
+        }
+    }
+    output[k] = '\0';
+    strcpy(input, output);
+}
+
+void prepareInput(char *input) {
+    int len = strlen(input);
+    char temp[100];
+    int k = 0;
+    
+    // Convert to uppercase and remove non-letters
+    for(int i = 0; i < len; i++) {
+        if(isalpha(input[i])) {
+            temp[k++] = toupper(input[i]);
+        }
+    }
+    
+    // Add X between double letters
+    len = k;
+    k = 0;
+    for(int i = 0; i < len; i++) {
+        input[k++] = temp[i];
+        if(i < len - 1 && temp[i] == temp[i+1]) {
+            input[k++] = 'X';
+        }
+    }
+    
+    // Add X if length is odd
+    if(k % 2 != 0) {
+        input[k++] = 'X';
+    }
+    input[k] = '\0';
+}
+
+int main() {
+    char matrix[5][5];
+    char key[50];
+    char text[100];
+    
+    printf("Enter the key: ");
+    scanf("%s", key);
+    printf("Enter the text to encrypt: ");
+    scanf(" %[^\n]s", text);
+    
+    // Convert key to uppercase
+    for(int i = 0; key[i] != '\0'; i++) {
+        key[i] = toupper(key[i]);
+    }
+    
+    // Create the Playfair matrix
+    createMatrix(key, matrix);
+    
+    // Print the matrix
+    printf("\nPlayfair Matrix:\n");
+    for(int i = 0; i < 5; i++) {
+        for(int j = 0; j < 5; j++) {
+            printf("%c ", matrix[i][j]);
+        }
+        printf("\n");
+    }
+    
+    // Prepare input text
+    prepareInput(text);
+    printf("\nPrepared text: %s\n", text);
+    
+    // Encrypt
+    encrypt(matrix, text);
+    printf("Encrypted text: %s\n", text);
+    
+    return 0;
+}
