@@ -1,42 +1,24 @@
-from Crypto.Util.number import long_to_bytes, inverse
+from Crypto.Util.number import inverse, long_to_bytes
 
-def integer_cbrt(x):
-    # integer cube root by binary search
-    low, high = 0, 1 << (x.bit_length() // 3 + 1)
-    while low < high:
-        mid = (low + high) // 2
-        mid_cubed = mid ** 3
-        if mid_cubed == x:
-            return mid
-        elif mid_cubed < x:
-            low = mid + 1
-        else:
-            high = mid
-    return low - 1
+p2 = 92485699008821604962781252088144588185786438951323516745121426871300830235303
+p3 = 92374251524536546576693540461101446909146756438865803503864778226555748297663
+e = 0x10001
 
-n = ...  # your large n
-e = 65537
-c = ...  # your ciphertext
+c_hex = "18292c0714b4910e4cbf931e16310e1790d3b5c3d17be29bc0e5c49a3235894f071ae0a2094cd72dfeb57655677390ef4e69329a3beddaf6f94be0372c7c34edb53caa67e46e5ed48a886605030ae63a4e6a46e938e1aa06c357d52db3347acb96e656bec36ef066f884130b713d2ce0ea50df802aad64cde7f42faaaa9e0f63223109f6cf7def743b8d16b300ca0df473754f5834d67f63b5486c6f1ed66a7fc3251d27f24f570fcf0be3da4d39977437030b79a6edb73f0c58b02089ed35227a06aacd5908cce9618d08c63711a1a9bde857406eb3dfa6b2ffd6ba68d73c6e74aeaf903209e24d5059ab5005c284a63b785450d95717c8dbea5c1b5c818603b2ae908cdacefd6e84653e684c124a5ad7ead1c71af12a197aca6b94214c2d04eaa23c12693bcf8df0ee8c46e13538c6268fb62e813f8b4cc90d5f982c60f14ce7a006877ccf7e572026e04a03c9cf9ffcc5e1448d55d0ab7d755edd1c4a653fe3299d42d8d7f9fabff94967b9b0c665ffb84cac0d2b097cf9933a41da3d921beb2da720bf82fbd21a916c329f0e0c8147d91953a8acf621973505dd48d7a7c75b31d48a6e8531b76ef2c5e7a485ca7a771539308b42b0bd09c7055574af7296860097f22f7e4d841abd3b6d45b8f76138bf9384e5ca2121daba3457d969cdc503cbe1921d4ec1d319870eb8d5274156c167bd6d56af386eb27048765697e2f8e27d6ee057260f89f6fe70b92372db8bb6caa6eaebd92370d7f6931e1b35ebf6fa7dd5c99f5fa9b10aa57f186343ee82cf3ad74024427d3ef163a92b0f0288732c8427f933a33e5129f40b503738f94ef5b651bd6cb5372323fbd48eea8cbad2d891080e7ab1d7fe00fb944b143d394e662d67d3130eda06990373cae8f0be1774ac34a68edcfd6e9e6f2da8664845fb18dc77a40d7a446a9a06d4ada49ebf016b10f462c4d4899b6fcdeb2560bf4d6945aab6a333b9fd9746c5e90eea04bc7a77a2db705243fe381841a181927dc81ae5ad33b9902b7c3d3daf4773f8627ab5d17edd383b4466b4cca403629847739efb2a29cc7a062f814cbb8e328fd20822d69e65253537927e695dc2a4beebd908e3fb769d6a87f4343122cc923dec5746d926f467e0001f306842a5621d40636fa34a40d6f90f668246f9591982063394ca3e9354b139ccb1d92766c89a483654e0ded715b70bc5d7ceeafff96295879f4ad8cab44b9bc183c9c275a3942c9d4d4bc68ad6c462c7fb9fdb0272cb9f85adac069c36f791929b4c3b4e3abec2c2f2ce11daa2492415326b12f90edbcd540853f1f78d7a5930aaa6e6041631715fcfa931a5ef3e209534e7bb39647c583db6ceadfda6b6765cbd14bceedd9bd355306b5fb6bfc9c3cdc46302093ee01f395d19a574cd102e25565239c0a5bc9e285178557e1158f6c0d8620ab2a42b6c5e3004f89cde5017f4e4dc5866d6f1947152fcfa795ddf2be6667d3de6fe3487effa384615f31f8f716ed8c634c8f976176549eec7091ceab52ef9f27a014704611229038bb65912ada07bc4b5fde83b50fec4ceca822526fb9e0df5812366298849bd36294148d3a6277f3dedcabaca8243a04246da8cfa80b7614755a825a8baf0b2825855584c8e11da50509b9c7345590c71f64a6ea5b23453293574d0b657a4c29b0850e86da58be5b58943f6893ddb274ee4857c5e62be09cf01ecfa84f271f6b789510321ab4df96c9382904d903a33e6d409b4f02fdb15e4c47a3d99aad5c8d4f3cc1483a9025b518d75d65eb910c5a6fefff49b38febf5e454ec48a2bb712e09c3b1d59a508a37d6c0fda02983b594c93b0f53b9e9eec5ee0738851418b3f1fa22dd855e64fa2a4c940dc1e52c144f1aa44c40e027e3d467cf462b167eadc91d5f42668ae4638270618069e1c154623bdefb0161adcc0df42d5f26bc184e31a3736ab0f1309a722f2100708f988437efec6168ac077899138e84040d42a0815cab51c9701a7a1bd9c29769e9266ba3ca3e773d531edc7c"
+c = int(c_hex, 16)
 
-# Approximate d = p^3 + p^2 + p ≈ p^3
-approx_d = integer_cbrt(n)
+d2 = inverse(e, p2 - 1)
+d3 = inverse(e, p3 - 1)
 
-# Now solve p^3 + p^2 + p = approx_d using integer trial around approx_d^(1/3)
-# We'll try p values near integer_cbrt(approx_d)
+m2 = pow(c, d2, p2)
+m3 = pow(c, d3, p3)
 
-for p_candidate in range(approx_d - 1000000, approx_d + 1000000):
-    val = p_candidate**3 + p_candidate**2 + p_candidate
-    if n % val == 0:
-        p = p_candidate
-        q = 1 + p + p**2
-        r = n // (p * q)
-        break
-else:
-    raise Exception("Failed to factor n")
+def crt(a1, m1, a2, m2):
+    m1_inv = inverse(m1, m2)
+    x = (a1 + (a2 - a1) * m1_inv * m1) % (m1 * m2)
+    return x
 
-phi = (p - 1)*(q - 1)*(r - 1)
+m = crt(m2, p2, m3, p3)
 
-d = inverse(e, phi)
-
-m = pow(c, d, n)
-print("Flag:", long_to_bytes(m))
+flag_bytes = long_to_bytes(m)
+print(flag_bytes.decode())
