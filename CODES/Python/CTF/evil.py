@@ -1,20 +1,18 @@
 import hashlib
+import itertools
+import string
 
-hash_to_find = "faad49866e9498fc1719f5289e7a0269"
+target_hash = "faad49866e9498fc1719f5289e7a0269"
 
-candidates = [
-    "flag{}",
-    "flag{}",
-    "flag{1234}",
-    "flag{secret}",
-    "flag{password}",
-    # add more guesses here
-]
+def md5_hash(s):
+    return hashlib.md5(s.encode()).hexdigest()
 
-for candidate in candidates:
-    h = hashlib.md5(candidate.encode()).hexdigest()
-    if h == hash_to_find:
-        print(f"Found! {candidate} hashes to {hash_to_find}")
-        break
-else:
-    print("No matches found in candidate list")
+chars = string.ascii_letters + string.digits
+
+for length in range(1, 10): 
+    for candidate in itertools.product(chars, repeat=length):
+        inner = ''.join(candidate)
+        flag = f"FLAG{{{inner}}}"
+        if md5_hash(flag) == target_hash:
+            print("Found flag:", flag)
+            break
